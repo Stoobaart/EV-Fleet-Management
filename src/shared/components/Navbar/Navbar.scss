@@ -1,0 +1,66 @@
+@use '../../styles/variables' as *;
+
+.navbar {
+  height: $nav-height;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-h);
+    flex-shrink: 0;
+
+    &:hover {
+      color: var(--accent);
+    }
+  }
+
+  &__logo {
+    width: 28px;
+    height: 28px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  &__app-name {
+    font-family: $font-sans;
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: -0.2px;
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+  }
+
+  &__link {
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    color: var(--text);
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+      background: var(--accent-bg);
+      color: var(--text-h);
+    }
+
+    &--active {
+      color: var(--accent);
+      background: var(--accent-bg);
+    }
+  }
+}
