@@ -7,9 +7,9 @@ A single-page application for managing an electric vehicle fleet — tracking ve
 | Layer | Technology |
 |---|---|
 | Frontend | React 19, Vite 8 |
+| Compiler | React Compiler (babel-plugin-react-compiler) |
 | Routing | React Router 7 |
 | Server state | TanStack Query 5 |
-| Global UI state | Redux Toolkit |
 | Styling | SCSS + design token system |
 | Backend | Express 5 (Node.js) |
 | Table rendering | react-virtualized |
@@ -114,6 +114,10 @@ Styling uses a token-based design system defined in `src/shared/styles/_variable
 ### Filter options endpoint
 
 Available filter values (makes, years) are derived dynamically from the live data via a dedicated `GET /api/vehicles/filters` endpoint rather than being hardcoded on the client. This means the dropdowns stay accurate if vehicles are added or removed.
+
+### React Compiler
+
+The project uses the React Compiler (`babel-plugin-react-compiler`) via `@vitejs/plugin-react`'s Babel integration. The compiler automatically inserts memoization at build time, eliminating the need to manually write `useMemo`, `useCallback`, or `memo` calls. All memoization is derived from the component's source code rather than maintained by hand.
 
 ### Search debouncing
 

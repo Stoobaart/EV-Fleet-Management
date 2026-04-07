@@ -15,19 +15,25 @@
     "projects": [
       {
         "displayName": "server",
-        "testMatch": ["<rootDir>/server/**/__tests__/**/*.test.js"],
+        "testMatch": [
+          "<rootDir>/server/**/__tests__/**/*.test.js"
+        ],
         "testEnvironment": "node",
         "transform": {}
       },
       {
         "displayName": "frontend",
-        "testMatch": ["<rootDir>/src/**/__tests__/**/*.test.{js,jsx}"],
+        "testMatch": [
+          "<rootDir>/src/**/__tests__/**/*.test.{js,jsx}"
+        ],
         "testEnvironment": "jest-environment-jsdom",
         "transform": {
           "^.+\\.[jt]sx?$": "babel-jest"
         },
         "transformIgnorePatterns": [],
-        "setupFiles": ["<rootDir>/src/__mocks__/setupTests.cjs"],
+        "setupFiles": [
+          "<rootDir>/src/__mocks__/setupTests.cjs"
+        ],
         "moduleNameMapper": {
           "\\.(scss|css)$": "<rootDir>/src/__mocks__/styleMock.cjs"
         }
@@ -47,10 +53,12 @@
     "@babel/preset-env": "^7.29.2",
     "@babel/preset-react": "^7.28.5",
     "@eslint/js": "^9.39.4",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "babel-plugin-react-compiler": "^19.0.0-beta-af1b7da-20250417",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
