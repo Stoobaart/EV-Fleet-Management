@@ -6,7 +6,9 @@
       "Skill(update-config)",
       "Bash(git init:*)",
       "Bash(git branch:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(ls /Users/mac/Documents/ev-fleet-management/node_modules/jest-*)",
+      "Bash(mv:*)"
     ]
   }
 }

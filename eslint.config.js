@@ -13,7 +13,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['server/**/__tests__/**/*.js', 'server/**/*.test.js'],
+    files: ['server/**/__tests__/**/*.js', 'server/**/*.test.js', 'src/**/__tests__/**/*.{js,jsx}', 'src/**/*.test.{js,jsx}'],
     languageOptions: {
       globals: globals.jest,
     },
