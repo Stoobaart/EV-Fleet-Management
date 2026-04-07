@@ -34,7 +34,7 @@ export function DriversTable() {
   const order  = searchParams.get('order')  ?? 'asc'
 
   const [searchInput, setSearchInput] = useState(searchParams.get('search') ?? '')
-  const debouncedSearch = useDebounce(searchInput, 2000)
+  const debouncedSearch = useDebounce(searchInput, 500)
 
   useEffect(() => {
     setSearchParams((prev) => {
