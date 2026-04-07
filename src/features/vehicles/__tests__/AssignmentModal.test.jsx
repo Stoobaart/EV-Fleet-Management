@@ -17,6 +17,8 @@ jest.mock('../../../shared/components/DataTable/DataTable', () => ({
 
 import { useDrivers } from '../../drivers/api/useDrivers'
 
+const mockRefetch = jest.fn()
+
 const unassignedDrivers = [
   { id: 10, firstName: 'Alice', lastName: 'Brown',   email: 'alice@evfleet.io' },
   { id: 11, firstName: 'Bob',   lastName: 'Carter',  email: 'bob@evfleet.io' },
@@ -127,9 +129,23 @@ describe('AssignmentModal', () => {
     })
 
     test('shows error message when drivers fetch fails', () => {
-      useDrivers.mockReturnValue({ data: { error: 'Failed to load drivers' }, isPending: false })
+      useDrivers.mockReturnValue({ data: { error: 'Failed to load drivers' }, isPending: false, refetch: mockRefetch })
       render(<AssignmentModal {...baseProps} />)
       expect(screen.getByText('Failed to load drivers')).toBeTruthy()
+    })
+
+    test('renders a retry button when drivers fetch fails', () => {
+      useDrivers.mockReturnValue({ data: { error: 'Failed to load drivers' }, isPending: false, refetch: mockRefetch })
+      render(<AssignmentModal {...baseProps} />)
+      expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy()
+    })
+
+    test('calls refetch when retry is clicked', () => {
+      mockRefetch.mockReset()
+      useDrivers.mockReturnValue({ data: { error: 'Failed to load drivers' }, isPending: false, refetch: mockRefetch })
+      render(<AssignmentModal {...baseProps} />)
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
     })
   })
 })

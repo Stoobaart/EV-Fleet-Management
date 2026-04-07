@@ -143,6 +143,45 @@ The spinner style is defined in `src/shared/components/DataTable/DataTable.scss`
 
 ---
 
+## Error states
+
+Every error message must be accompanied by an inline Retry button. Style both elements together under the component's `__error` class:
+
+```scss
+&__error {
+  color: $color-error;
+  font-size: $font-size-sm;
+  margin: 0;
+}
+
+&__retry {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: $radius-md;
+  padding: $space-1 $space-3;
+  font-size: $font-size-sm;
+  color: var(--text-h);
+  cursor: pointer;
+  margin-left: $space-3;
+  transition: opacity $transition-fast;
+
+  &:hover {
+    opacity: 0.75;
+  }
+}
+```
+
+```jsx
+<p className="my-component__error">
+  {data.error}
+  <button className="my-component__retry" onClick={refetch}>Retry</button>
+</p>
+```
+
+The Retry button calls TanStack Query's `refetch` directly — no page reload required. See `docs/data-fetching.md` for how to destructure `refetch` from the query hook.
+
+---
+
 ## Adding new tokens
 
 If the design calls for a value not covered above, add it to `src/shared/styles/_variables.scss` (and the matching CSS custom property to `src/index.css` if it needs dark-mode support), then use it via the token — never inline.

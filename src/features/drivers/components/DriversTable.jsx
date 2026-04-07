@@ -45,7 +45,7 @@ export function DriversTable() {
   }, [debouncedSearch, setSearchParams])
 
   const search = searchParams.get('search') ?? ''
-  const { data, isPending } = useDrivers({ search, sortBy, order })
+  const { data, isPending, refetch } = useDrivers({ search, sortBy, order })
 
   function handleSort(key) {
     setSearchParams((prev) => {
@@ -91,7 +91,10 @@ export function DriversTable() {
 
       <ErrorBoundary>
         {data?.error ? (
-          <p className="drivers-table__error">{data.error}</p>
+          <p className="drivers-table__error">
+            {data.error}
+            <button className="drivers-table__retry" onClick={refetch}>Retry</button>
+          </p>
         ) : (
           <DataTable
             columns={columns}

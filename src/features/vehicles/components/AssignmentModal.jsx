@@ -12,7 +12,7 @@ const COLUMNS = [
 
 export function AssignmentModal({ driver, onAssign, onUnassign, onClose, isPending }) {
   const isAssigned = driver && driver !== 'Unassigned'
-  const { data, isPending: isLoadingDrivers } = useDrivers({
+  const { data, isPending: isLoadingDrivers, refetch: refetchDrivers } = useDrivers({
     assignmentStatus: 'unassigned',
     enabled: !isAssigned,
   })
@@ -39,7 +39,10 @@ export function AssignmentModal({ driver, onAssign, onUnassign, onClose, isPendi
         {!isAssigned && (
           <ErrorBoundary>
             {data?.error ? (
-              <p className="assignment-modal__error">{data.error}</p>
+              <p className="assignment-modal__error">
+                {data.error}
+                <button className="assignment-modal__retry" onClick={refetchDrivers}>Retry</button>
+              </p>
             ) : !isLoadingDrivers && drivers.length === 0 ? (
               <p className="assignment-modal__empty">No available drivers to assign</p>
             ) : (

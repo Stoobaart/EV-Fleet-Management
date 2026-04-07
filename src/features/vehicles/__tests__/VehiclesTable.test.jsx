@@ -42,10 +42,13 @@ function renderTable(url = '/') {
   )
 }
 
+const mockRefetch = jest.fn()
+
 describe('VehiclesTable', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
-    useVehicles.mockReturnValue({ data: baseVehicles, isPending: false })
+    mockRefetch.mockReset()
+    useVehicles.mockReturnValue({ data: baseVehicles, isPending: false, refetch: mockRefetch })
     useVehicleFilters.mockReturnValue({ data: baseFilters })
   })
 
@@ -58,16 +61,29 @@ describe('VehiclesTable', () => {
   })
 
   describe('error state', () => {
+    beforeEach(() => {
+      useVehicles.mockReturnValue({ data: { error: 'Server error' }, isPending: false, refetch: mockRefetch })
+    })
+
     test('renders the error message', () => {
-      useVehicles.mockReturnValue({ data: { error: 'Server error' }, isPending: false })
       renderTable()
       expect(screen.getByText('Server error')).toBeTruthy()
     })
 
     test('does not render the data table on error', () => {
-      useVehicles.mockReturnValue({ data: { error: 'Server error' }, isPending: false })
       renderTable()
       expect(screen.queryByTestId('data-table')).toBeNull()
+    })
+
+    test('renders a retry button', () => {
+      renderTable()
+      expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy()
+    })
+
+    test('calls refetch when retry is clicked', () => {
+      renderTable()
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
     })
   })
 

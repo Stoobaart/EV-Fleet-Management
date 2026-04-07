@@ -20,15 +20,28 @@ async function fetchSomething() {
 }
 ```
 
-Consumers check for `data.error` before using the response:
+Consumers check for `data.error` before using the response. Always destructure `refetch` alongside `data` so the error state can offer a Retry button:
 
 ```js
-const { data } = useQuery(...)
+const { data, isPending, refetch } = useQuery(...)
 
 if (data?.error) {
-  // render error state
+  // render error state with retry
 }
 ```
+
+Every error state must render an inline Retry button that calls `refetch`:
+
+```jsx
+{data?.error && (
+  <p className="my-component__error">
+    {data.error}
+    <button className="my-component__retry" onClick={refetch}>Retry</button>
+  </p>
+)}
+```
+
+Style the Retry button as a ghost/secondary button using design tokens (see `docs/design-system.md` — Error states).
 
 ## Caching
 

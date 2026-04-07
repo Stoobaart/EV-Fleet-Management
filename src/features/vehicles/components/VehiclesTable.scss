@@ -38,6 +38,22 @@
     font-size: 14px;
   }
 
+  &__retry {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    padding: $space-1 $space-3;
+    font-size: $font-size-sm;
+    color: var(--text-h);
+    cursor: pointer;
+    margin-left: $space-3;
+    transition: opacity $transition-fast;
+
+    &:hover {
+      opacity: 0.75;
+    }
+  }
+
   &__loading {
     font-size: 14px;
     color: var(--text);

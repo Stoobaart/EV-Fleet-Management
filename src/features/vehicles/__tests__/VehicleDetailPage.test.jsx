@@ -22,6 +22,7 @@ jest.mock('react-router', () => ({
 }))
 
 const mockMutate = jest.fn()
+const mockRefetch = jest.fn()
 
 const baseVehicle = {
   id: 1,
@@ -49,8 +50,9 @@ describe('VehicleDetailPage', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
     mockMutate.mockReset()
+    mockRefetch.mockReset()
     useVehicleImage.mockReturnValue({ data: null })
-    useUpdateVehicleAssignment.mockReturnValue({ mutate: mockMutate, isPending: false })
+    useUpdateVehicleAssignment.mockReturnValue({ mutate: mockMutate, isPending: false, isError: false, error: null })
   })
 
   describe('pending state', () => {
@@ -68,16 +70,29 @@ describe('VehicleDetailPage', () => {
   })
 
   describe('error state', () => {
+    beforeEach(() => {
+      useVehicle.mockReturnValue({ data: { error: 'This vehicle has not been found' }, isPending: false, refetch: mockRefetch })
+    })
+
     test('renders the error message', () => {
-      useVehicle.mockReturnValue({ data: { error: 'This vehicle has not been found' }, isPending: false })
       renderDetailPage()
       expect(screen.getByText('This vehicle has not been found')).toBeTruthy()
     })
 
     test('does not render vehicle details', () => {
-      useVehicle.mockReturnValue({ data: { error: 'This vehicle has not been found' }, isPending: false })
       renderDetailPage()
       expect(screen.queryByText('Tesla')).toBeNull()
+    })
+
+    test('renders a retry button', () => {
+      renderDetailPage()
+      expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy()
+    })
+
+    test('calls refetch when retry is clicked', () => {
+      renderDetailPage()
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -120,6 +135,28 @@ describe('VehicleDetailPage', () => {
       renderDetailPage()
       fireEvent.click(screen.getByRole('button', { name: /Back to/ }))
       expect(mockNavigate).toHaveBeenCalledWith(-1)
+    })
+  })
+
+  describe('mutation error state', () => {
+    beforeEach(() => {
+      useVehicle.mockReturnValue({ data: baseVehicle, isPending: false })
+      useUpdateVehicleAssignment.mockReturnValue({
+        mutate: mockMutate,
+        isPending: false,
+        isError: true,
+        error: { message: 'Assignment update failed' },
+      })
+    })
+
+    test('renders the mutation error message', () => {
+      renderDetailPage()
+      expect(screen.getByText('Assignment update failed')).toBeTruthy()
+    })
+
+    test('still renders vehicle details alongside the error', () => {
+      renderDetailPage()
+      expect(screen.getByText('2023 Tesla Model 3')).toBeTruthy()
     })
   })
 

@@ -36,7 +36,7 @@ const COLUMNS = [
 export function VehiclesTable() {
   const navigate = useNavigate();
   const { search, sortBy, order, make, year, status, searchInput, setSearchInput, handleFilterChange, handleSort } = useVehicleTableParams();
-  const { data, isPending } = useVehicles({ search, sortBy, order, make, year, status });
+  const { data, isPending, refetch } = useVehicles({ search, sortBy, order, make, year, status });
   const { data: filters } = useVehicleFilters();
 
   const vehicles = Array.isArray(data) ? data : [];
@@ -82,7 +82,10 @@ export function VehiclesTable() {
 
       <ErrorBoundary>
         {data?.error ? (
-          <p className="vehicles-table__error">{data.error}</p>
+          <p className="vehicles-table__error">
+            {data.error}
+            <button className="vehicles-table__retry" onClick={refetch}>Retry</button>
+          </p>
         ) : (
           <DataTable
             columns={COLUMNS}

@@ -11,9 +11,9 @@ export default function VehicleDetailPage() {
   const navigate = useNavigate()
   const { state } = useLocation()
   const backLabel = `← Back to ${state?.from ?? 'Vehicles'}`
-  const { data, isPending } = useVehicle(id)
+  const { data, isPending, refetch } = useVehicle(id)
   const { data: wikiImageUrl } = useVehicleImage(data?.make, data?.model)
-  const { mutate: updateAssignment, isPending: isUpdatingAssignment } = useUpdateVehicleAssignment(id)
+  const { mutate: updateAssignment, isPending: isUpdatingAssignment, isError: isAssignmentError, error: assignmentError } = useUpdateVehicleAssignment(id)
   const [modalOpen, setModalOpen] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
 
@@ -25,7 +25,10 @@ export default function VehicleDetailPage() {
 
       <ErrorBoundary>
         {data?.error ? (
-          <p className="vehicle-detail__error">{data.error}</p>
+          <p className="vehicle-detail__error">
+            {data.error}
+            <button className="vehicle-detail__retry" onClick={refetch}>Retry</button>
+          </p>
         ) : isPending ? (
           <div className="vehicle-detail__spinner" aria-label="Loading" />
         ) : data ? (
@@ -78,6 +81,10 @@ export default function VehicleDetailPage() {
           </div>
         ) : null}
       </ErrorBoundary>
+
+      {isAssignmentError && (
+        <p className="vehicle-detail__mutation-error">{assignmentError?.message ?? 'Assignment update failed'}</p>
+      )}
 
       {modalOpen && data && !data.error && (
         <AssignmentModal

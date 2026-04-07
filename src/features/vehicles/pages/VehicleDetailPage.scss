@@ -33,6 +33,28 @@
     font-size: $font-size-sm;
   }
 
+  &__retry {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    padding: $space-1 $space-3;
+    font-size: $font-size-sm;
+    color: var(--text-h);
+    cursor: pointer;
+    margin-left: $space-3;
+    transition: opacity $transition-fast;
+
+    &:hover {
+      opacity: 0.75;
+    }
+  }
+
+  &__mutation-error {
+    color: $color-error;
+    font-size: $font-size-sm;
+    margin: $space-3 0 0;
+  }
+
   &__sections {
     display: flex;
     flex-direction: column;

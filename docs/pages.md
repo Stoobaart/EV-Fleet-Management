@@ -37,7 +37,7 @@ Detail pages follow the same rules. The `<main>` and `<h1>` are always rendered 
 
 ```jsx
 export default function VehicleDetailPage() {
-  const { data, isPending } = useVehicle(id)
+  const { data, isPending, refetch } = useVehicle(id)
 
   return (
     <main>
@@ -45,7 +45,10 @@ export default function VehicleDetailPage() {
       {isPending ? (
         <div aria-label="Loading" />
       ) : data?.error ? (
-        <p>{data.error}</p>
+        <p className="vehicle-detail__error">
+          {data.error}
+          <button className="vehicle-detail__retry" onClick={refetch}>Retry</button>
+        </p>
       ) : (
         <div>...</div>
       )}
@@ -53,6 +56,8 @@ export default function VehicleDetailPage() {
   )
 }
 ```
+
+Always destructure `refetch` from the query hook and include a Retry button in every error state. See `docs/data-fetching.md` and `docs/design-system.md` for the full pattern and SCSS.
 
 Detail pages may omit the `<h1>` when the heading is derived from loaded data and rendered inside the content section (e.g. `{data.year} {data.make} {data.model}`). In that case the title is part of the loaded state block, not a static `<h1>` at the top.
 

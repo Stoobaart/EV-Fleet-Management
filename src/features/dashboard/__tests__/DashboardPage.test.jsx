@@ -1,10 +1,15 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { DashboardPage } from '../pages/DashboardPage'
 import { useAnalytics } from '../api/useAnalytics'
 
 jest.mock('../api/useAnalytics')
 
+const mockRefetch = jest.fn()
+
 describe('DashboardPage', () => {
+  beforeEach(() => {
+    mockRefetch.mockReset()
+  })
   describe('pending state', () => {
     beforeEach(() => {
       useAnalytics.mockReturnValue({ isPending: true, data: undefined })
@@ -30,7 +35,12 @@ describe('DashboardPage', () => {
 
   describe('error state', () => {
     beforeEach(() => {
-      useAnalytics.mockReturnValue({ isPending: false, data: { error: 'Failed to load' } })
+      useAnalytics.mockReturnValue({ isPending: false, data: { error: 'Failed to load' }, refetch: mockRefetch })
+    })
+
+    test('renders the heading', () => {
+      render(<DashboardPage />)
+      expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeTruthy()
     })
 
     test('renders the error message', () => {
@@ -42,6 +52,17 @@ describe('DashboardPage', () => {
       render(<DashboardPage />)
       expect(screen.queryByText('Total Vehicles')).toBeNull()
       expect(screen.queryByText('Total Drivers')).toBeNull()
+    })
+
+    test('renders a retry button', () => {
+      render(<DashboardPage />)
+      expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy()
+    })
+
+    test('calls refetch when retry is clicked', () => {
+      render(<DashboardPage />)
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
     })
   })
 
