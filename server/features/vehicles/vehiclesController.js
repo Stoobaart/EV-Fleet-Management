@@ -4,6 +4,12 @@ import { drivers } from '../drivers/driversData.js'
 const SORTABLE_FIELDS = ['licensePlate', 'make', 'model', 'year', 'driver', 'colour', 'range']
 const SEARCH_FIELDS = ['licensePlate', 'make', 'model', 'year', 'driver']
 
+function project(vehicle) {
+  const { driverId, ...rest } = vehicle
+  const d = driverId !== null ? drivers.find(d => d.id === driverId) : null
+  return { ...rest, driver: d ? `${d.firstName} ${d.lastName}` : 'Unassigned', status: d ? 'assigned' : 'unassigned' }
+}
+
 export function getVehicleFilters(req, res) {
   const makes = [...new Set(vehicles.map(v => v.make))].sort()
   const years = [...new Set(vehicles.map(v => v.year))].sort((a, b) => a - b)
@@ -15,8 +21,7 @@ export function getVehicleById(req, res) {
   const id = parseInt(req.params.id, 10)
   const vehicle = vehicles.find(v => v.id === id)
   if (!vehicle) return res.status(404).json({ error: 'Vehicle not found' })
-  const status = vehicle.driver === 'Unassigned' ? 'unassigned' : 'assigned'
-  res.json({ ...vehicle, status })
+  res.json(project(vehicle))
 }
 
 export function updateVehicleAssignment(req, res) {
@@ -27,27 +32,26 @@ export function updateVehicleAssignment(req, res) {
   if (!vehicle) return res.status(404).json({ error: 'Vehicle not found' })
 
   if (driverId) {
-    if (vehicle.driver !== 'Unassigned') return res.status(400).json({ error: 'Vehicle is already assigned' })
+    if (vehicle.driverId !== null) return res.status(400).json({ error: 'Vehicle is already assigned' })
     const driver = drivers.find(d => d.id === driverId)
     if (!driver) return res.status(404).json({ error: 'Driver not found' })
-    if (driver.assignmentStatus === 'assigned') return res.status(400).json({ error: 'Driver is already assigned' })
-    vehicle.driver = `${driver.firstName} ${driver.lastName}`
-    driver.vehicleAssignment = vehicle
-    driver.assignmentStatus = 'assigned'
-    return res.json({ ...vehicle, status: 'assigned' })
+    if (driver.vehicleId !== null) return res.status(400).json({ error: 'Driver is already assigned' })
+    vehicle.driverId = driverId
+    driver.vehicleId = vehicleId
+    return res.json(project(vehicle))
   } else {
-    if (vehicle.driver === 'Unassigned') return res.status(400).json({ error: 'Vehicle is already unassigned' })
-    vehicle.driver = 'Unassigned'
-    const driver = drivers.find(d => d.vehicleAssignment?.id === vehicleId)
-    if (driver) { driver.vehicleAssignment = null; driver.assignmentStatus = 'unassigned' }
-    return res.json({ ...vehicle, status: 'unassigned' })
+    if (vehicle.driverId === null) return res.status(400).json({ error: 'Vehicle is already unassigned' })
+    const driver = drivers.find(d => d.vehicleId === vehicleId)
+    vehicle.driverId = null
+    if (driver) driver.vehicleId = null
+    return res.json(project(vehicle))
   }
 }
 
 export function getVehicles(req, res) {
   const { sortBy = 'id', order = 'asc', search = '', make = '', year = '', status = '' } = req.query
 
-  let result = vehicles.map(v => ({ ...v, status: v.driver === 'Unassigned' ? 'unassigned' : 'assigned' }))
+  let result = vehicles.map(project)
 
   if (search) {
     const term = search.toLowerCase()

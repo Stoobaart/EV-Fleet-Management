@@ -1,4 +1,12 @@
 import { drivers } from './driversData.js'
+import { vehicles } from '../vehicles/vehiclesData.js'
+
+function projectDriver(d) {
+  const { vehicleId, ...rest } = d
+  const raw = vehicleId !== null ? (vehicles.find(v => v.id === vehicleId) ?? null) : null
+  const vehicleAssignment = raw ? (({ driverId: _, ...v }) => v)(raw) : null
+  return { ...rest, assignmentStatus: vehicleId !== null ? 'assigned' : 'unassigned', vehicleAssignment }
+}
 
 export function getDrivers(req, res) {
   const { search = '', sortBy = '', order = 'asc', assignmentStatus = '' } = req.query
@@ -6,18 +14,23 @@ export function getDrivers(req, res) {
   let result = drivers
 
   if (assignmentStatus) {
-    result = result.filter((d) => d.assignmentStatus === assignmentStatus)
+    const assigned = assignmentStatus === 'assigned'
+    result = result.filter(d => assigned ? d.vehicleId !== null : d.vehicleId === null)
   }
 
   if (search) {
     const q = search.toLowerCase()
-    result = result.filter((d) =>
-      d.firstName.toLowerCase().includes(q) ||
-      d.lastName.toLowerCase().includes(q) ||
-      d.email.toLowerCase().includes(q) ||
-      d.assignmentStatus.toLowerCase().includes(q) ||
-      (d.vehicleAssignment?.licensePlate ?? '').toLowerCase().includes(q)
-    )
+    result = result.filter((d) => {
+      const licensePlate = d.vehicleId !== null ? (vehicles.find(v => v.id === d.vehicleId)?.licensePlate ?? '') : ''
+      const status = d.vehicleId !== null ? 'assigned' : 'unassigned'
+      return (
+        d.firstName.toLowerCase().includes(q) ||
+        d.lastName.toLowerCase().includes(q) ||
+        d.email.toLowerCase().includes(q) ||
+        status.includes(q) ||
+        licensePlate.toLowerCase().includes(q)
+      )
+    })
   }
 
   if (sortBy) {
@@ -32,5 +45,5 @@ export function getDrivers(req, res) {
     })
   }
 
-  res.json(result)
+  res.json(result.map(projectDriver))
 }

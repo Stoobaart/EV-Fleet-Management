@@ -2,8 +2,8 @@ import { vehicles } from '../vehicles/vehiclesData.js'
 import { drivers } from '../drivers/driversData.js'
 
 export function getAnalytics(req, res) {
-  const assignedVehicles = vehicles.filter(v => v.driver !== 'Unassigned').length
-  const assignedDrivers = drivers.filter(d => d.assignmentStatus === 'assigned').length
+  const assignedVehicles = vehicles.filter(v => v.driverId !== null).length
+  const assignedDrivers = drivers.filter(d => d.vehicleId !== null).length
   res.json({
     totalVehicles: vehicles.length,
     assignedVehicles,
