@@ -1,0 +1,113 @@
+@use '../../../shared/styles/variables' as *;
+
+.assignment-modal {
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  &__panel {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    padding: $space-6;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: $space-5;
+    box-shadow: 0 8px 32px var(--shadow);
+
+    &--wide {
+      max-width: 720px;
+    }
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    color: var(--text-h);
+    margin: 0;
+  }
+
+  &__driver {
+    font-size: $font-size-sm;
+    color: var(--text);
+    margin: 0;
+
+    strong {
+      color: var(--text-h);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-3;
+    justify-content: flex-end;
+  }
+
+  &__unassign {
+    background: $color-error;
+    color: #fff;
+    border: none;
+    border-radius: $radius-md;
+    padding: $space-2 $space-4;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity $transition-fast;
+
+    &:hover:not(:disabled) {
+      opacity: 0.85;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &__drivers-table {
+    max-height: 360px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+  }
+
+  &__empty {
+    font-size: $font-size-sm;
+    color: var(--text);
+    margin: 0;
+  }
+
+  &__error {
+    color: $color-error;
+    font-size: $font-size-sm;
+    margin: 0;
+  }
+
+  &__loading {
+    font-size: $font-size-sm;
+    color: var(--text);
+    margin: 0;
+  }
+
+  &__cancel {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    padding: $space-2 $space-4;
+    font-size: $font-size-sm;
+    color: var(--text-h);
+    cursor: pointer;
+    transition: opacity $transition-fast;
+
+    &:hover {
+      opacity: 0.75;
+    }
+  }
+}

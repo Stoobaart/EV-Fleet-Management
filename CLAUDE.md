@@ -7,6 +7,8 @@ The `docs/` directory contains rules that govern all planning and code changes.
 
 - [`docs/rules.md`](./docs/rules.md) — coding standards, conventions, and constraints
 - [`docs/data-fetching.md`](./docs/data-fetching.md) — data fetching patterns and error handling
+- [`docs/tables.md`](./docs/tables.md) — table implementation spec; read before adding any new table
+- [`docs/design-system.md`](./docs/design-system.md) — design tokens, spacing/colour/radius scales, and styling rules; read before any style change
 
 ## Project Overview
 

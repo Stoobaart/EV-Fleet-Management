@@ -1,0 +1,75 @@
+@use '../../styles/variables' as *;
+@use '../../styles/skeleton' as *;
+
+.data-table-wrapper {
+  border: 1px solid var(--border);
+  border-radius: $radius-lg;
+  background: var(--bg);
+  overflow: hidden;
+
+  &--loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.data-table__spinner {
+  @include spinner;
+}
+
+.data-table__head {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.data-table__th {
+  flex: 1;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+
+  &--sortable {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      color: var(--text-h);
+    }
+  }
+}
+
+.data-table__sort-icon {
+  color: $accent;
+}
+
+.data-table__row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+
+  &:hover {
+    background: var(--border);
+  }
+
+  &--clickable {
+    cursor: pointer;
+  }
+}
+
+.data-table__cell {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--text-h);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,67 @@
+@use '../../../shared/styles/variables' as *;
+
+.vehicles-table {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  &__search {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-h);
+    background: var(--bg);
+    outline: none;
+
+    &::placeholder {
+      color: var(--text);
+    }
+
+    &:focus {
+      border-color: $accent;
+    }
+  }
+
+  &__search {
+    min-width: 300px;
+  }
+
+&__error {
+    color: $color-error;
+    font-size: 14px;
+  }
+
+  &__loading {
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  &__filter {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-h);
+    background: var(--bg);
+    outline: none;
+    cursor: pointer;
+
+    &:focus {
+      border-color: $accent;
+    }
+  }
+
+  &__make-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    display: block;
+  }
+}

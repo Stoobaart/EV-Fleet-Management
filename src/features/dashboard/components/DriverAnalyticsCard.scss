@@ -1,0 +1,59 @@
+@use '../../../shared/styles/variables' as *;
+
+.driver-analytics-card {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    padding: $space-5;
+    gap: $space-2;
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    color: var(--text);
+  }
+
+  &__value {
+    font-size: $font-size-2xl;
+    font-weight: 600;
+    color: var(--text-h);
+    line-height: 1;
+  }
+
+  &__breakdown {
+    display: flex;
+    gap: $space-5;
+    padding-top: $space-4;
+    border-top: 1px solid var(--border);
+  }
+
+  &__stat {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+  }
+
+  &__stat-value {
+    font-size: $font-size-lg;
+    font-weight: 600;
+    color: var(--text-h);
+    line-height: 1;
+  }
+
+  &__stat-label {
+    font-size: $font-size-xs;
+    color: var(--text);
+  }
+
+  &__chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    border-left: 1px solid var(--border);
+
+    padding: $space-5;
+  }
+}

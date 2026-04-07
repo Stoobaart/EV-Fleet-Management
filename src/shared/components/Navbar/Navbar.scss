@@ -47,11 +47,11 @@
 
   &__link {
     padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: $radius-sm;
     text-decoration: none;
-    font-size: 14px;
+    font-size: $font-size-sm;
     color: var(--text);
-    transition: background 0.15s, color 0.15s;
+    transition: background $transition-fast, color $transition-fast;
 
     &:hover {
       background: var(--accent-bg);
@@ -61,6 +61,27 @@
     &--active {
       color: var(--accent);
       background: var(--accent-bg);
+    }
+  }
+
+  &__theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: $radius-sm;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: background $transition-fast, color $transition-fast;
+    margin-left: $space-2;
+
+    &:hover {
+      background: var(--accent-bg);
+      color: var(--text-h);
     }
   }
 }

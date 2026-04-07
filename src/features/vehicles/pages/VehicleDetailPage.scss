@@ -1,0 +1,139 @@
+@use '../../../shared/styles/variables' as *;
+@use '../../../shared/styles/skeleton' as *;
+
+.vehicle-detail {
+  &__spinner {
+    @include spinner;
+    margin: $space-8 auto;
+  }
+
+  max-width: 900px;
+  margin: 0 auto;
+
+  &__back {
+    background: none;
+    border: none;
+    color: $accent;
+    font-size: $font-size-sm;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: $space-5;
+    display: inline-flex;
+    align-items: center;
+    gap: $space-1;
+    transition: opacity $transition-fast;
+
+    &:hover {
+      opacity: 0.75;
+    }
+  }
+
+  &__error {
+    color: $color-error;
+    font-size: $font-size-sm;
+  }
+
+  &__sections {
+    display: flex;
+    flex-direction: column;
+    gap: $space-5;
+  }
+
+  &__section {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    padding: $space-6;
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+  }
+
+  &__image-skeleton {
+    width: 100%;
+    height: 320px;
+    border-radius: $radius-lg;
+    @include skeleton;
+  }
+
+  &__image {
+    display: block;
+
+    &--wiki {
+      width: 100%;
+      max-height: 320px;
+      object-fit: cover;
+      border-radius: $radius-lg;
+    }
+
+    &--favicon {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+    }
+  }
+
+  &__title {
+    font-size: $font-size-xl;
+    color: var(--text-h);
+    margin: 0;
+  }
+
+  &__info {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: $space-2 $space-5;
+    margin: 0;
+
+    dt {
+      font-size: $font-size-sm;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    dd {
+      font-size: $font-size-sm;
+      color: var(--text-h);
+      margin: 0;
+    }
+  }
+
+  &__status {
+    &--assigned {
+      color: $color-success;
+    }
+
+    &--unassigned {
+      color: var(--text);
+    }
+  }
+
+  &__section-title {
+    font-size: $font-size-lg;
+    color: var(--text-h);
+    margin: 0;
+  }
+
+  &__driver-name {
+    font-size: $font-size-md;
+    color: var(--text-h);
+    margin: 0;
+  }
+
+  &__cta {
+    align-self: flex-start;
+    background: $accent;
+    color: #fff;
+    border: none;
+    border-radius: $radius-md;
+    padding: $space-2 $space-4;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity $transition-fast;
+
+    &:hover {
+      opacity: 0.85;
+    }
+  }
+}

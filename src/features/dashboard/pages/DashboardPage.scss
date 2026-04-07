@@ -1,0 +1,16 @@
+@use '../../../shared/styles/variables' as *;
+@use '../../../shared/styles/skeleton' as *;
+
+.dashboard {
+  &__cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $space-5;
+  }
+
+  &__card-skeleton {
+    height: 160px;
+    border-radius: $radius-lg;
+    @include skeleton;
+  }
+}

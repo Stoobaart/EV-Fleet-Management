@@ -1,10 +1,9 @@
 import './StatCard.scss'
 
-export function StatCard({ label, value }) {
+export function StatCard({ children }) {
   return (
     <div className="stat-card">
-      <span className="stat-card__label">{label}</span>
-      <span className="stat-card__value">{value}</span>
+      {children}
     </div>
   )
 }
