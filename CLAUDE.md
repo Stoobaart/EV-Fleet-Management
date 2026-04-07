@@ -10,6 +10,7 @@ The `docs/` directory contains rules that govern all planning and code changes.
 - [`docs/tables.md`](./docs/tables.md) — table implementation spec; read before adding any new table
 - [`docs/design-system.md`](./docs/design-system.md) — design tokens, spacing/colour/radius scales, and styling rules; read before any style change
 - [`docs/testing.md`](./docs/testing.md) — test types, mock patterns, assertion style, and naming conventions; read before writing or changing any test
+- [`docs/pages.md`](./docs/pages.md) — page component structure and conventions; read before creating or modifying any page
 
 ## Project Overview
 
@@ -34,12 +35,20 @@ npm run lint      # Run ESLint
 
 ```
 src/
-  App.jsx         # Main app component
-  App.css         # App styles
-  main.jsx        # Entry point
-  index.css       # Global styles
-  assets/         # Images and SVGs
+  main.jsx              # Entry point
+  index.css             # Global resets and variables
+  app/                  # Router, layout, global providers
+  features/
+    dashboard/          # Analytics cards and dashboard page
+    drivers/            # Drivers table and page
+    vehicles/           # Vehicles table, detail page, assignment modal
+  shared/
+    components/         # DataTable, Navbar, StatCard, PieChart, ErrorBoundary
+    data/               # Static lookup data (e.g. makeDomains)
+    hooks/              # useDebounce, useTheme
+    styles/             # Shared SCSS variables and mixins
+  __mocks__/            # Jest style mock and setup polyfills
 public/
   favicon.svg
-  icons.svg       # SVG sprite sheet
+  icons.svg             # SVG sprite sheet
 ```
