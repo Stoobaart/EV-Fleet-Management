@@ -40,9 +40,7 @@ export function AssignmentModal({ driver, onAssign, onUnassign, onClose, isPendi
           <ErrorBoundary>
             {data?.error ? (
               <p className="assignment-modal__error">{data.error}</p>
-            ) : isLoadingDrivers ? (
-              <p className="assignment-modal__loading">Loading drivers…</p>
-            ) : drivers.length === 0 ? (
+            ) : !isLoadingDrivers && drivers.length === 0 ? (
               <p className="assignment-modal__empty">No available drivers to assign</p>
             ) : (
               <div className="assignment-modal__drivers-table">
@@ -50,6 +48,7 @@ export function AssignmentModal({ driver, onAssign, onUnassign, onClose, isPendi
                   columns={COLUMNS}
                   data={drivers}
                   onRowClick={(row) => { onAssign(row.id) }}
+                  isPending={isLoadingDrivers}
                 />
               </div>
             )}

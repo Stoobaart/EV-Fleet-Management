@@ -29,9 +29,9 @@
 
 .data-table__th {
   flex: 1;
-  padding: 12px 16px;
+  padding: $space-3 $space-4;
   text-align: left;
-  font-size: 14px;
+  font-size: $font-size-sm;
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
@@ -66,8 +66,8 @@
 
 .data-table__cell {
   flex: 1;
-  padding: 12px 16px;
-  font-size: 14px;
+  padding: $space-3 $space-4;
+  font-size: $font-size-sm;
   color: var(--text-h);
   white-space: nowrap;
   overflow: hidden;

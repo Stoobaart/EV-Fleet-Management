@@ -4,7 +4,7 @@ import { vehicles } from '../vehicles/vehiclesData.js'
 function projectDriver(d) {
   const { vehicleId, ...rest } = d
   const raw = vehicleId !== null ? (vehicles.find(v => v.id === vehicleId) ?? null) : null
-  const vehicleAssignment = raw ? (({ driverId: _, ...v }) => v)(raw) : null
+  const vehicleAssignment = raw ? Object.fromEntries(Object.entries(raw).filter(([k]) => k !== 'driverId')) : null
   return { ...rest, assignmentStatus: vehicleId !== null ? 'assigned' : 'unassigned', vehicleAssignment }
 }
 
