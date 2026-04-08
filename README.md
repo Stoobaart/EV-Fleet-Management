@@ -1,6 +1,6 @@
 # EV Fleet Management
 
-A single-page application for managing an electric vehicle fleet — tracking vehicles, drivers, and assignments across a 300-vehicle, 100-driver dataset.
+A single-page application for managing an electric vehicle fleet — 300 vehicles, 100 drivers.
 
 ## Stack
 
@@ -12,113 +12,89 @@ A single-page application for managing an electric vehicle fleet — tracking ve
 | Server state | TanStack Query 5 |
 | Styling | SCSS + design token system |
 | Backend | Express 5 (Node.js) |
-| Table rendering | react-virtualized |
+| Table rendering | react-window |
 
 ## Running the app
-
-Two processes are required — start each in a separate terminal:
 
 ```bash
 npm run server   # Express API on http://localhost:3001
 npm run dev      # Vite dev server on http://localhost:5173
-```
-
-Other commands:
-
-```bash
-npm run build    # Production build
-npm run preview  # Preview production build
+npm test         # Jest
 npm run lint     # ESLint
 ```
 
 ## Features
 
 ### Vehicles (`/vehicles`)
-- Virtualized table rendering 300 vehicles with no scroll performance degradation
-- Per-column sorting (make, model, year, driver, colour, range) — server-side
-- Full-text search across plate, make, model, year, and driver — debounced, server-side
-- Filter dropdowns for make, year, and assignment status — server-side, stacks with search and sort
-- Brand favicon icons per vehicle make via Google's favicon service
-- All table state (search, sort, filters) persisted in URL search params — bookmarkable and shareable
+- Virtualized table — 300 vehicles, no scroll performance degradation
+- Server-side sort, search (debounced), and filter (make, year, status)
+- Paginated — 200 rows per page, Prev/Next always visible in the viewport
+- Brand favicon per make via Google's favicon service
+- All state (search, sort, filters, page) in URL params — bookmarkable and shareable
 
 ### Drivers (`/drivers`)
 - Driver roster with vehicle assignment tracking
+- Server-side sort, search (debounced)
+- Paginated — 200 rows per page, Prev/Next always visible in the viewport
+- All state (search, sort, page) in URL params
 
 ### Dashboard (`/`)
 - Fleet analytics overview
 
 ## Architecture
 
-### Feature-based structure
+### Structure
 
-The project is organised by domain, not by file type. Each feature owns everything it needs — components, API hooks, styles, and state — co-located in `src/features/<feature>/`. Shared cross-feature utilities live in `src/shared/`.
+Feature-based: each feature owns its components, API hooks, styles, and tests in `src/features/<feature>/`. Shared utilities live in `src/shared/`.
 
 ```
 src/
   features/
-    vehicles/
-      api/            # TanStack Query hooks
-      components/     # VehiclesTable, etc.
-      pages/          # Thin route-level wrappers
+    vehicles/     # api/, components/, hooks/, pages/, __tests__/
     drivers/
     dashboard/
   shared/
-    components/       # DataTable, ErrorBoundary, Navbar
-    hooks/            # useDebounce
-    styles/           # SCSS design tokens (_variables.scss)
-    data/             # Shared static data (makeDomains)
+    components/   # DataTable, Pagination, ErrorBoundary, Navbar
+    hooks/        # useDebounce
+    styles/       # SCSS design tokens
+    data/         # makeDomains
   app/
-    router.jsx        # Route definitions
+    router.jsx
 server/
   features/
-    vehicles/         # Controller, router, data
+    vehicles/     # controller, router, data
     drivers/
     analytics/
 ```
 
-### State management by scope
+### State by scope
 
-State is assigned to the right tool for its scope — nothing is over-centralised:
+| Scope | Tool |
+|---|---|
+| URL params | Search, sort, filters, page — bookmarkable, browser-history-aware |
+| `useState` | Raw search input (pre-debounce) |
+| TanStack Query | All server data — fetching, caching, synchronization |
 
-- **URL search params** — table state (search query, sort column, sort direction, active filters). Makes table state bookmarkable, shareable, and browser-history-aware with no extra work.
-- **`useState`** — local ephemeral state, e.g. the raw search input value before debouncing.
-- **TanStack Query** — all server data fetching, caching, and synchronisation. Each unique combination of params has its own cache entry via a structured query key.
-- **Redux Toolkit** — reserved for global UI state that doesn't belong to a single component.
+### Server-side data pipeline
 
-### Server-side filtering and sorting
+All filtering, sorting, searching, and pagination runs on the Express server. The client sends `search`, `sortBy`, `order`, `make`, `year`, `status`, `page`, and `limit` as query params. The server returns a paginated envelope:
 
-All filtering, searching, and sorting happens on the Express server, not in the browser. The client sends params (`search`, `sortBy`, `order`, `make`, `year`, `status`) as URL query strings; the server applies them in order and returns only the matching, sorted result. This keeps the client free of data-manipulation logic and scales naturally if the data source is swapped to a real database.
+```json
+{ "data": [...], "total": 42, "page": 1, "totalPages": 3 }
+```
 
-### Derived data, not duplicated data
+Page size is fixed at 200 rows. Changing search, sort, or a filter resets page to 1. Each unique param combination gets its own TanStack Query cache entry — navigating back to a visited page is instant.
 
-Vehicle assignment `status` (`assigned` / `unassigned`) is computed at query time in the server controller from the `driver` field, rather than stored as a separate column. This means there is one source of truth — the `driver` field — and `status` can never fall out of sync when assignments change.
+### Key decisions
 
-### DataTable as a generic, composable component
+**Thrown errors over error-as-data** — fetch functions throw on failure so TanStack Query's built-in retry fires automatically. The `isError`/`error`/`refetch` shape is consistent across all queries and data is guaranteed present on the success path.
 
-`DataTable` (`src/shared/components/DataTable/`) is a feature-agnostic rendering component. It accepts a `columns` definition array that supports:
+**Optimistic mutation updates** — the assignment mutation updates the UI immediately in `onMutate` and rolls back in `onError`, making driver assignment feel instant.
 
-- `sortable` — enables clickable sort headers
-- `width` — opts a column into a fixed pixel width instead of `flex: 1`
-- `render` — custom cell renderer, enabling rich content (icons, badges) without leaking feature logic into the shared component
+**Virtualized table rendering** — `react-window` renders only visible rows. The `DataTable` wrapper uses `display: flex; flex-direction: column` so the list container fills the exact remaining height after the header via `flex: 1; min-height: 0`, which `react-window`'s internal `ResizeObserver` measures correctly.
 
-Feature tables pass their own `COLUMNS` config and remain fully in control of presentation without modifying the shared component.
+**Shared `Pagination` component** — Prev/Next controls are extracted to `src/shared/components/Pagination/` so any future table can reuse them without duplicating disabled-state logic. The component is stateless — it owns no URL or page knowledge.
 
-### Virtualized table rendering
+**React Compiler** — `babel-plugin-react-compiler` inserts memoization at build time, eliminating manual `useMemo`/`useCallback`/`memo` calls.
 
-`DataTable` uses `react-virtualized` (`AutoSizer` + `List`) to render only the rows currently in the viewport. With 300 vehicles, this keeps rendering overhead flat regardless of dataset size.
-
-### Design system
-
-Styling uses a token-based design system defined in `src/shared/styles/_variables.scss` (SCSS variables, compile-time) and `src/index.css` (CSS custom properties, runtime — used for dark mode). Tokens cover spacing (`$space-1`–`$space-8`), colour, border-radius, typography, and semantic states (error/success/warning). No colours, spacing values, or border-radius values are hardcoded in component styles. See [`docs/design-system.md`](./docs/design-system.md) for the full token reference and styling rules.
-
-### Filter options endpoint
-
-Available filter values (makes, years) are derived dynamically from the live data via a dedicated `GET /api/vehicles/filters` endpoint rather than being hardcoded on the client. This means the dropdowns stay accurate if vehicles are added or removed.
-
-### React Compiler
-
-The project uses the React Compiler (`babel-plugin-react-compiler`) via `@vitejs/plugin-react`'s Babel integration. The compiler automatically inserts memoization at build time, eliminating the need to manually write `useMemo`, `useCallback`, or `memo` calls. All memoization is derived from the component's source code rather than maintained by hand.
-
-### Search debouncing
-
-The search input maintains its own local `useState` for the typed value so keystrokes feel instant. The URL param (and therefore the server query) is only updated after a debounce delay via a shared `useDebounce` hook — preventing a server request on every keystroke.
+**Token-based design system** — all colors, spacing, border-radius, and typography are defined as SCSS variables (`_variables.scss`) and CSS custom properties (`index.css`). Dark mode is implemented by redefining the CSS custom properties — no component styles change.

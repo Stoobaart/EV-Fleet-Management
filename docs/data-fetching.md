@@ -6,26 +6,22 @@ Use **TanStack Query** for all server state. Query hooks live in `src/features/<
 
 ## Error Handling
 
-Fetch functions must NOT throw errors. On failure, return an error object instead:
+Fetch functions MUST throw on failure. Do not catch errors or return `{ error }` objects — let TanStack Query catch the thrown error and expose it via `isError`/`error`:
 
 ```js
 async function fetchSomething() {
-  try {
-    const res = await fetch('/api/something')
-    if (!res.ok) return { error: `Request failed with status ${res.status}` }
-    return res.json()
-  } catch (err) {
-    return { error: err.message }
-  }
+  const res = await fetch('/api/something')
+  if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
+  return res.json()
 }
 ```
 
-Consumers check for `data.error` before using the response. Always destructure `refetch` alongside `data` so the error state can offer a Retry button:
+Consumers destructure `isError`, `error`, and `refetch` from the query hook:
 
 ```js
-const { data, isPending, refetch } = useQuery(...)
+const { data, isPending, isError, error, refetch } = useQuery(...)
 
-if (data?.error) {
+if (isError) {
   // render error state with retry
 }
 ```
@@ -33,9 +29,9 @@ if (data?.error) {
 Every error state must render an inline Retry button that calls `refetch`:
 
 ```jsx
-{data?.error && (
+{isError && (
   <p className="my-component__error">
-    {data.error}
+    {error.message}
     <button className="my-component__retry" onClick={refetch}>Retry</button>
   </p>
 )}
@@ -85,6 +81,22 @@ useMutation({
 ```
 
 Always roll back on error using the snapshot captured in `onMutate`.
+
+## Paginated responses
+
+List endpoints (`/api/vehicles`, `/api/drivers`) return a paginated envelope — never a raw array:
+
+```json
+{ "data": [...], "total": 42, "page": 1, "totalPages": 3 }
+```
+
+Always pass `page` and `limit` as query params. `limit` is always `200` (rows per page). Include `page` in the TanStack Query key so each page is cached independently:
+
+```js
+queryKey: ['vehicles', { search, sortBy, order, make, year, status, page }]
+```
+
+Changing search, sort, or a filter must reset `page` back to `1` in the URL params (delete the `page` param so it falls back to the default).
 
 ## Naming
 

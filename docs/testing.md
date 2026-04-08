@@ -61,7 +61,7 @@ beforeEach(() => {
 
 ### DataTable
 
-Mock `DataTable` inline whenever testing a parent component that renders it. The real `DataTable` uses `react-virtualized`'s `AutoSizer`, which reads `offsetWidth`/`offsetHeight` — values that are always `0` in jsdom and cause silent rendering failures.
+Mock `DataTable` inline whenever testing a parent component that renders it. The real `DataTable` uses `react-window`'s `List`, which uses a `ResizeObserver` and reads layout dimensions — values that are always `0` in jsdom and cause silent rendering failures.
 
 ```jsx
 jest.mock('../../../shared/components/DataTable/DataTable', () => ({
@@ -166,7 +166,7 @@ describe('ComponentName', () => {
 
   describe('error state', () => {
     beforeEach(() => {
-      useFoo.mockReturnValue({ isPending: false, data: { error: 'Failed to load' } })
+      useFoo.mockReturnValue({ isPending: false, isError: true, error: new Error('Failed to load'), data: undefined, refetch: mockRefetch })
     })
     test(...)
   })
@@ -190,13 +190,13 @@ Server tests use `describe` blocks per operation or business rule (e.g. `'assign
 
 ## Error Shape
 
-Errors are returned in `data`, not thrown. This matches the convention in `data-fetching.md`.
+Fetch functions throw on failure. TanStack Query catches the error and exposes it via `isError` and `error`. Mock error states using `isError: true` with an `Error` instance:
 
 ```js
-useFoo.mockReturnValue({ isPending: false, data: { error: 'Something went wrong' } })
+useFoo.mockReturnValue({ isPending: false, isError: true, error: new Error('Something went wrong'), data: undefined, refetch: mockRefetch })
 ```
 
-Never mock `isError: true` or throw from a mock hook — the codebase does not use TanStack Query's error channel.
+Always include `data: undefined` and `refetch: mockRefetch` in error state mocks so the component can render a Retry button.
 
 ---
 

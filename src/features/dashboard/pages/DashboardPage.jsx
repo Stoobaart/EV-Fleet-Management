@@ -4,7 +4,7 @@ import { DriverAnalyticsCard } from '../components/DriverAnalyticsCard'
 import './DashboardPage.scss'
 
 export function DashboardPage() {
-  const { data, isPending, refetch } = useAnalytics()
+  const { data, isPending, isError, error, refetch } = useAnalytics()
 
   return (
     <main>
@@ -14,12 +14,12 @@ export function DashboardPage() {
           <div className="dashboard__card-skeleton" aria-hidden="true" />
           <div className="dashboard__card-skeleton" aria-hidden="true" />
         </div>
-      ) : data?.error ? (
+      ) : isError ? (
         <p className="dashboard__error">
-          {data.error}
+          {error.message}
           <button className="dashboard__retry" onClick={refetch}>Retry</button>
         </p>
-      ) : data ? (
+      ) : (
         <div className="dashboard__cards">
           <VehicleAnalyticsCard
             totalVehicles={data.totalVehicles}
@@ -32,7 +32,7 @@ export function DashboardPage() {
             unassignedDrivers={data.unassignedDrivers}
           />
         </div>
-      ) : null}
+      )}
     </main>
   )
 }

@@ -9,7 +9,7 @@ function projectDriver(d) {
 }
 
 export function getDrivers(req, res) {
-  const { search = '', sortBy = '', order = 'asc', assignmentStatus = '' } = req.query
+  const { search = '', sortBy = '', order = 'asc', assignmentStatus = '', page = '1', limit = '200' } = req.query
 
   let result = drivers
 
@@ -45,5 +45,13 @@ export function getDrivers(req, res) {
     })
   }
 
-  res.json(result.map(projectDriver))
+  const projected = result.map(projectDriver)
+  const total = projected.length
+  const pageNum = Math.max(1, parseInt(page, 10) || 1)
+  const limitNum = Math.max(1, parseInt(limit, 10) || 200)
+  const totalPages = Math.ceil(total / limitNum) || 1
+  const start = (pageNum - 1) * limitNum
+  const data = projected.slice(start, start + limitNum)
+
+  res.json({ data, total, page: pageNum, totalPages })
 }

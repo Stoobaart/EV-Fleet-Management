@@ -49,7 +49,7 @@ export function updateVehicleAssignment(req, res) {
 }
 
 export function getVehicles(req, res) {
-  const { sortBy = 'id', order = 'asc', search = '', make = '', year = '', status = '' } = req.query
+  const { sortBy = 'id', order = 'asc', search = '', make = '', year = '', status = '', page = '1', limit = '200' } = req.query
 
   let result = vehicles.map(project)
 
@@ -73,5 +73,12 @@ export function getVehicles(req, res) {
     return 0
   })
 
-  res.json(result)
+  const total = result.length
+  const pageNum = Math.max(1, parseInt(page, 10) || 1)
+  const limitNum = Math.max(1, parseInt(limit, 10) || 200)
+  const totalPages = Math.ceil(total / limitNum) || 1
+  const start = (pageNum - 1) * limitNum
+  const data = result.slice(start, start + limitNum)
+
+  res.json({ data, total, page: pageNum, totalPages })
 }

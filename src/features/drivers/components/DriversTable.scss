@@ -30,6 +30,11 @@
     }
   }
 
+  &__table {
+    height: calc(100vh - 290px);
+    min-height: 300px;
+  }
+
   &__error {
     color: $color-error;
     font-size: 14px;

@@ -35,7 +35,7 @@ describe('DashboardPage', () => {
 
   describe('error state', () => {
     beforeEach(() => {
-      useAnalytics.mockReturnValue({ isPending: false, data: { error: 'Failed to load' }, refetch: mockRefetch })
+      useAnalytics.mockReturnValue({ isPending: false, isError: true, error: new Error('Failed to load'), data: undefined, refetch: mockRefetch })
     })
 
     test('renders the heading', () => {

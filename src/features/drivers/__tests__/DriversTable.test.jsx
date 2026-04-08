@@ -34,6 +34,8 @@ const baseDrivers = [
   { id: 2, firstName: 'Bob',   lastName: 'Carter', email: 'bob@evfleet.io',   assignmentStatus: 'unassigned', vehicleAssignment: null },
 ]
 
+const baseData = { data: baseDrivers, total: 2, page: 1, totalPages: 1 }
+
 function renderTable(url = '/') {
   return render(
     <MemoryRouter initialEntries={[url]}>
@@ -46,12 +48,12 @@ describe('DriversTable', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
     mockRefetch.mockReset()
-    useDrivers.mockReturnValue({ data: baseDrivers, isPending: false, refetch: mockRefetch })
+    useDrivers.mockReturnValue({ data: baseData, isPending: false, refetch: mockRefetch })
   })
 
   describe('pending state', () => {
     test('passes isPending to DataTable', () => {
-      useDrivers.mockReturnValue({ data: [], isPending: true, refetch: mockRefetch })
+      useDrivers.mockReturnValue({ data: { data: [], total: 0, page: 1, totalPages: 1 }, isPending: true, refetch: mockRefetch })
       renderTable()
       expect(screen.getByTestId('table-pending')).toBeTruthy()
     })
@@ -59,7 +61,7 @@ describe('DriversTable', () => {
 
   describe('error state', () => {
     beforeEach(() => {
-      useDrivers.mockReturnValue({ data: { error: 'Failed to load drivers' }, isPending: false, refetch: mockRefetch })
+      useDrivers.mockReturnValue({ isPending: false, isError: true, error: new Error('Failed to load drivers'), data: undefined, refetch: mockRefetch })
     })
 
     test('renders the error message', () => {
@@ -94,6 +96,45 @@ describe('DriversTable', () => {
     test('renders the search input', () => {
       renderTable()
       expect(screen.getByPlaceholderText('Search drivers…')).toBeTruthy()
+    })
+  })
+
+  describe('pagination', () => {
+    test('renders pagination controls', () => {
+      renderTable()
+      expect(screen.getByLabelText('Previous page')).toBeTruthy()
+      expect(screen.getByLabelText('Next page')).toBeTruthy()
+      expect(screen.getByText('Page 1 of 1')).toBeTruthy()
+    })
+
+    test('prev button is disabled on first page', () => {
+      renderTable()
+      expect(screen.getByLabelText('Previous page').disabled).toBe(true)
+    })
+
+    test('next button is disabled when on last page', () => {
+      renderTable()
+      expect(screen.getByLabelText('Next page').disabled).toBe(true)
+    })
+
+    test('next button is enabled when more pages exist', () => {
+      useDrivers.mockReturnValue({ data: { data: baseDrivers, total: 400, page: 1, totalPages: 2 }, isPending: false, refetch: mockRefetch })
+      renderTable()
+      expect(screen.getByLabelText('Next page').disabled).toBe(false)
+    })
+
+    test('clicking next updates page param', () => {
+      useDrivers.mockReturnValue({ data: { data: baseDrivers, total: 400, page: 1, totalPages: 2 }, isPending: false, refetch: mockRefetch })
+      renderTable()
+      fireEvent.click(screen.getByLabelText('Next page'))
+      expect(useDrivers).toHaveBeenCalledWith(expect.objectContaining({ page: 2 }))
+    })
+
+    test('clicking prev updates page param', () => {
+      useDrivers.mockReturnValue({ data: { data: baseDrivers, total: 400, page: 2, totalPages: 2 }, isPending: false, refetch: mockRefetch })
+      renderTable('/?page=2')
+      fireEvent.click(screen.getByLabelText('Previous page'))
+      expect(useDrivers).toHaveBeenCalledWith(expect.objectContaining({ page: 1 }))
     })
   })
 })

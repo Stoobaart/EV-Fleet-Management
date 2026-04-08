@@ -71,7 +71,7 @@ describe('VehicleDetailPage', () => {
 
   describe('error state', () => {
     beforeEach(() => {
-      useVehicle.mockReturnValue({ data: { error: 'This vehicle has not been found' }, isPending: false, refetch: mockRefetch })
+      useVehicle.mockReturnValue({ isPending: false, isError: true, error: new Error('This vehicle has not been found'), data: undefined, refetch: mockRefetch })
     })
 
     test('renders the error message', () => {

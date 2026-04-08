@@ -11,7 +11,7 @@ export default function VehicleDetailPage() {
   const navigate = useNavigate()
   const { state } = useLocation()
   const backLabel = `← Back to ${state?.from ?? 'Vehicles'}`
-  const { data, isPending, refetch } = useVehicle(id)
+  const { data, isPending, isError, error, refetch } = useVehicle(id)
   const { data: wikiImageUrl } = useVehicleImage(data?.make, data?.model)
   const { mutate: updateAssignment, isPending: isUpdatingAssignment, isError: isAssignmentError, error: assignmentError } = useUpdateVehicleAssignment(id)
   const [modalOpen, setModalOpen] = useState(false)
@@ -24,9 +24,9 @@ export default function VehicleDetailPage() {
       </button>
 
       <ErrorBoundary>
-        {data?.error ? (
+        {isError ? (
           <p className="vehicle-detail__error">
-            {data.error}
+            {error.message}
             <button className="vehicle-detail__retry" onClick={refetch}>Retry</button>
           </p>
         ) : isPending ? (

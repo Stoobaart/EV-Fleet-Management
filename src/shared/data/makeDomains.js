@@ -17,7 +17,6 @@ export const MAKE_DOMAINS = {
   Toyota: 'toyota.com',
   Nissan: 'nissan.com',
   GMC: 'gmc.com',
-  Cadillac: 'cadillac.com',
   Jeep: 'jeep.com',
   Honda: 'honda.com',
   Porsche: 'porsche.com',

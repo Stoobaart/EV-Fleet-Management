@@ -1,29 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-async function fetchVehicles({ search, sortBy, order, make, year, status }) {
-  try {
-    const params = new URLSearchParams()
-    if (search) params.set('search', search)
-    if (sortBy) params.set('sortBy', sortBy)
-    if (order) params.set('order', order)
-    if (make) params.set('make', make)
-    if (year) params.set('year', year)
-    if (status) params.set('status', status)
+async function fetchVehicles({ search, sortBy, order, make, year, status, page }) {
+  const params = new URLSearchParams()
+  if (search) params.set('search', search)
+  if (sortBy) params.set('sortBy', sortBy)
+  if (order) params.set('order', order)
+  if (make) params.set('make', make)
+  if (year) params.set('year', year)
+  if (status) params.set('status', status)
+  if (page) params.set('page', page)
+  params.set('limit', '200')
 
-    const res = await fetch(`http://localhost:3001/api/vehicles?${params}`, {
-      signal: AbortSignal.timeout(5000),
-    })
-    if (!res.ok) return { error: `Request failed with status ${res.status}` }
-    return res.json()
-  } catch (err) {
-    return { error: err.message }
-  }
+  const res = await fetch(`http://localhost:3001/api/vehicles?${params}`, {
+    signal: AbortSignal.timeout(5000),
+  })
+  if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
+  return res.json()
 }
 
-export function useVehicles({ search, sortBy, order, make, year, status } = {}) {
+export function useVehicles({ search, sortBy, order, make, year, status, page } = {}) {
   return useQuery({
-    queryKey: ['vehicles', { search, sortBy, order, make, year, status }],
-    queryFn: () => fetchVehicles({ search, sortBy, order, make, year, status }),
+    queryKey: ['vehicles', { search, sortBy, order, make, year, status, page }],
+    queryFn: () => fetchVehicles({ search, sortBy, order, make, year, status, page }),
     staleTime: 1000 * 60 * 5,
   })
 }
@@ -49,16 +47,12 @@ export function useVehicleFilters() {
 }
 
 async function fetchVehicle(id) {
-  try {
-    const res = await fetch(`http://localhost:3001/api/vehicles/${id}`, {
-      signal: AbortSignal.timeout(5000),
-    })
-    if (res.status === 404) return { error: 'This vehicle has not been found' }
-    if (!res.ok) return { error: `Request failed with status ${res.status}` }
-    return res.json()
-  } catch (err) {
-    return { error: err.message }
-  }
+  const res = await fetch(`http://localhost:3001/api/vehicles/${id}`, {
+    signal: AbortSignal.timeout(5000),
+  })
+  if (res.status === 404) throw new Error('This vehicle has not been found')
+  if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
+  return res.json()
 }
 
 export function useVehicle(id) {

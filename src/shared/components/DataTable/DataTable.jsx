@@ -1,37 +1,34 @@
-import { AutoSizer, List } from "react-virtualized";
-import "react-virtualized/styles.css";
+import { List } from "react-window";
 import "./DataTable.scss";
 
 const ROW_HEIGHT = 45;
-const TABLE_HEIGHT = 600;
 const OVERSCAN = 5;
 
-export function DataTable({ columns, data, sortBy, order, onSort, onRowClick, isPending }) {
-  function rowRenderer({ index, key, style }) {
-    const row = data[index];
-    return (
-      <div
-        key={key}
-        style={style}
-        className={`data-table__row${onRowClick ? ' data-table__row--clickable' : ''}`}
-        onClick={onRowClick ? () => onRowClick(row) : undefined}
-      >
-        {columns.map((col) => (
-          <div
-            key={col.key}
-            className="data-table__cell"
-            style={col.width ? { flex: `0 0 ${col.width}px` } : undefined}
-          >
-            {col.render ? col.render(row) : row[col.key]}
-          </div>
-        ))}
-      </div>
-    );
-  }
+function RowComponent({ index, style, data: rows, columns, onRowClick }) {
+  const row = rows[index];
+  return (
+    <div
+      style={style}
+      className={`data-table__row${onRowClick ? ' data-table__row--clickable' : ''}`}
+      onClick={onRowClick ? () => onRowClick(row) : undefined}
+    >
+      {columns.map((col) => (
+        <div
+          key={col.key}
+          className="data-table__cell"
+          style={col.width ? { flex: `0 0 ${col.width}px` } : undefined}
+        >
+          {col.render ? col.render(row) : row[col.key]}
+        </div>
+      ))}
+    </div>
+  );
+}
 
+export function DataTable({ columns, data, sortBy, order, onSort, onRowClick, isPending }) {
   if (isPending) {
     return (
-      <div className="data-table-wrapper data-table-wrapper--loading" style={{ height: TABLE_HEIGHT }}>
+      <div className="data-table-wrapper data-table-wrapper--loading">
         <div className="data-table__spinner" aria-label="Loading" />
       </div>
     );
@@ -57,18 +54,15 @@ export function DataTable({ columns, data, sortBy, order, onSort, onRowClick, is
         ))}
       </div>
 
-      <AutoSizer disableHeight>
-        {({ width }) => (
-          <List
-            width={width}
-            height={TABLE_HEIGHT}
-            rowCount={data.length}
-            rowHeight={ROW_HEIGHT}
-            rowRenderer={rowRenderer}
-            overscanRowCount={OVERSCAN}
-          />
-        )}
-      </AutoSizer>
+      <div className="data-table__list-container">
+        <List
+          rowCount={data.length}
+          rowHeight={ROW_HEIGHT}
+          rowComponent={RowComponent}
+          rowProps={{ data, columns, onRowClick }}
+          overscanCount={OVERSCAN}
+        />
+      </div>
     </div>
   );
 }

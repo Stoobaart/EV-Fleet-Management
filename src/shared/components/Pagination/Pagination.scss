@@ -1,0 +1,33 @@
+@use '../../styles/variables' as *;
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-3 0;
+
+  &__btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    padding: $space-2 $space-4;
+    font-size: $font-size-sm;
+    color: var(--text-h);
+    cursor: pointer;
+    transition: opacity $transition-fast;
+
+    &:hover:not(:disabled) {
+      opacity: 0.75;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+  }
+
+  &__info {
+    font-size: $font-size-sm;
+    color: var(--text);
+  }
+}

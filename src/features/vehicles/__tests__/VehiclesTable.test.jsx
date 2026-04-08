@@ -32,6 +32,8 @@ const baseVehicles = [
   { id: 2, make: 'Rivian', model: 'R1T',    licensePlate: 'EV-002', year: 2022, driver: 'Unassigned', colour: 'Black', range: 314, status: 'unassigned' },
 ]
 
+const baseData = { data: baseVehicles, total: 2, page: 1, totalPages: 1 }
+
 const baseFilters = { makes: ['Tesla', 'Rivian'], years: [2022, 2023], statuses: ['assigned', 'unassigned'] }
 
 function renderTable(url = '/') {
@@ -48,13 +50,13 @@ describe('VehiclesTable', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
     mockRefetch.mockReset()
-    useVehicles.mockReturnValue({ data: baseVehicles, isPending: false, refetch: mockRefetch })
+    useVehicles.mockReturnValue({ data: baseData, isPending: false, refetch: mockRefetch })
     useVehicleFilters.mockReturnValue({ data: baseFilters })
   })
 
   describe('pending state', () => {
     test('passes isPending to DataTable', () => {
-      useVehicles.mockReturnValue({ data: [], isPending: true })
+      useVehicles.mockReturnValue({ data: { data: [], total: 0, page: 1, totalPages: 1 }, isPending: true })
       renderTable()
       expect(screen.getByTestId('table-pending')).toBeTruthy()
     })
@@ -62,7 +64,7 @@ describe('VehiclesTable', () => {
 
   describe('error state', () => {
     beforeEach(() => {
-      useVehicles.mockReturnValue({ data: { error: 'Server error' }, isPending: false, refetch: mockRefetch })
+      useVehicles.mockReturnValue({ isPending: false, isError: true, error: new Error('Server error'), data: undefined, refetch: mockRefetch })
     })
 
     test('renders the error message', () => {
@@ -162,6 +164,45 @@ describe('VehiclesTable', () => {
       expect(useVehicles).toHaveBeenLastCalledWith(
         expect.objectContaining({ status: 'assigned' })
       )
+    })
+  })
+
+  describe('pagination', () => {
+    test('renders pagination controls', () => {
+      renderTable()
+      expect(screen.getByLabelText('Previous page')).toBeTruthy()
+      expect(screen.getByLabelText('Next page')).toBeTruthy()
+      expect(screen.getByText('Page 1 of 1')).toBeTruthy()
+    })
+
+    test('prev button is disabled on first page', () => {
+      renderTable()
+      expect(screen.getByLabelText('Previous page').disabled).toBe(true)
+    })
+
+    test('next button is disabled when on last page', () => {
+      renderTable()
+      expect(screen.getByLabelText('Next page').disabled).toBe(true)
+    })
+
+    test('next button is enabled when more pages exist', () => {
+      useVehicles.mockReturnValue({ data: { data: baseVehicles, total: 400, page: 1, totalPages: 2 }, isPending: false, refetch: mockRefetch })
+      renderTable()
+      expect(screen.getByLabelText('Next page').disabled).toBe(false)
+    })
+
+    test('clicking next updates page param', () => {
+      useVehicles.mockReturnValue({ data: { data: baseVehicles, total: 400, page: 1, totalPages: 2 }, isPending: false, refetch: mockRefetch })
+      renderTable()
+      fireEvent.click(screen.getByLabelText('Next page'))
+      expect(useVehicles).toHaveBeenCalledWith(expect.objectContaining({ page: 2 }))
+    })
+
+    test('clicking prev updates page param', () => {
+      useVehicles.mockReturnValue({ data: { data: baseVehicles, total: 400, page: 2, totalPages: 2 }, isPending: false, refetch: mockRefetch })
+      renderTable('/?page=2')
+      fireEvent.click(screen.getByLabelText('Previous page'))
+      expect(useVehicles).toHaveBeenCalledWith(expect.objectContaining({ page: 1 }))
     })
   })
 })

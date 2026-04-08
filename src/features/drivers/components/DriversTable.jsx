@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router'
 import { DataTable } from '../../../shared/components/DataTable/DataTable'
 import { ErrorBoundary } from '../../../shared/components/ErrorBoundary/ErrorBoundary'
+import { Pagination } from '../../../shared/components/Pagination/Pagination'
 import { useDrivers } from '../api/useDrivers'
 import { useDebounce } from '../../../shared/hooks/useDebounce'
 import './DriversTable.scss'
@@ -32,20 +33,25 @@ export function DriversTable() {
 
   const sortBy = searchParams.get('sortBy') ?? ''
   const order  = searchParams.get('order')  ?? 'asc'
+  const page   = parseInt(searchParams.get('page') ?? '1', 10)
 
   const [searchInput, setSearchInput] = useState(searchParams.get('search') ?? '')
   const debouncedSearch = useDebounce(searchInput, 500)
+  const prevDebouncedSearch = useRef(debouncedSearch)
 
   useEffect(() => {
+    const changed = debouncedSearch !== prevDebouncedSearch.current
+    prevDebouncedSearch.current = debouncedSearch
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
       if (debouncedSearch) next.set('search', debouncedSearch); else next.delete('search')
+      if (changed) next.delete('page')
       return next
     })
   }, [debouncedSearch, setSearchParams])
 
   const search = searchParams.get('search') ?? ''
-  const { data, isPending, refetch } = useDrivers({ search, sortBy, order })
+  const { data, isPending, isError, error, refetch } = useDrivers({ search, sortBy, order, page })
 
   function handleSort(key) {
     setSearchParams((prev) => {
@@ -56,19 +62,29 @@ export function DriversTable() {
         next.set('sortBy', key)
         next.set('order', 'asc')
       }
+      next.delete('page')
       return next
     })
   }
 
-  const drivers = Array.isArray(data)
-    ? data.map((d) => ({
-        ...d,
-        vehicleId: d.vehicleAssignment?.id ?? null,
-        vehicle: d.vehicleAssignment
-          ? `${d.vehicleAssignment.licensePlate} — ${d.vehicleAssignment.make} ${d.vehicleAssignment.model}`
-          : '—',
-      }))
-    : []
+  function handlePageChange(newPage) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('page', String(newPage))
+      return next
+    })
+  }
+
+  const rows = Array.isArray(data?.data) ? data.data : []
+  const totalPages = data?.totalPages ?? 1
+
+  const drivers = rows.map((d) => ({
+    ...d,
+    vehicleId: d.vehicleAssignment?.id ?? null,
+    vehicle: d.vehicleAssignment
+      ? `${d.vehicleAssignment.licensePlate} — ${d.vehicleAssignment.make} ${d.vehicleAssignment.model}`
+      : '—',
+  }))
 
   const columns = COLUMNS.map((col) =>
     col.key === 'vehicle'
@@ -90,20 +106,30 @@ export function DriversTable() {
       </div>
 
       <ErrorBoundary>
-        {data?.error ? (
+        {isError ? (
           <p className="drivers-table__error">
-            {data.error}
+            {error.message}
             <button className="drivers-table__retry" onClick={refetch}>Retry</button>
           </p>
         ) : (
-          <DataTable
-            columns={columns}
-            data={drivers}
-            sortBy={sortBy}
-            order={order}
-            onSort={handleSort}
-            isPending={isPending}
-          />
+          <>
+            <div className="drivers-table__table">
+              <DataTable
+                columns={columns}
+                data={drivers}
+                sortBy={sortBy}
+                order={order}
+                onSort={handleSort}
+                isPending={isPending}
+              />
+            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPrev={() => handlePageChange(page - 1)}
+              onNext={() => handlePageChange(page + 1)}
+            />
+          </>
         )}
       </ErrorBoundary>
     </div>

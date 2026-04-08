@@ -24,37 +24,42 @@ The shared `DataTable` component lives in `src/shared/components/DataTable/DataT
 
 - One file per feature in `src/features/<feature>/api/`.
 - Contains a private `fetch<Feature>` function and a named `use<Feature>` export.
-- The fetch function accepts filter/sort params and appends them as URL search params.
+- The fetch function accepts filter/sort/page params and appends them as URL search params.
+- Always sends `limit=200` (rows per page).
 - The API base URL is `http://localhost:3001/api/<feature>`.
 - A 5-second abort timeout is applied via `AbortSignal.timeout(5000)`.
-- Follows the error-handling pattern from `docs/data-fetching.md`: never throw — return `{ error }` on failure.
-- `useQuery` query key includes all params that affect the result: `['<feature>', { search, sortBy, order }]`.
+- Follows the error-handling pattern from `docs/data-fetching.md`: throw on failure — let TanStack Query catch it.
+- `useQuery` query key includes all params that affect the result: `['<feature>', { search, sortBy, order, page }]`.
 - `staleTime` must be set — use `1000 * 60 * 5` (5 min) for fleet-status data.
+
+The server returns a paginated envelope — never a raw array:
+
+```js
+{ data: [...], total: number, page: number, totalPages: number }
+```
 
 ```js
 import { useQuery } from '@tanstack/react-query'
 
-async function fetch<Feature>({ search, sortBy, order }) {
-  try {
-    const params = new URLSearchParams()
-    if (search) params.set('search', search)
-    if (sortBy) params.set('sortBy', sortBy)
-    if (order) params.set('order', order)
+async function fetch<Feature>({ search, sortBy, order, page }) {
+  const params = new URLSearchParams()
+  if (search) params.set('search', search)
+  if (sortBy) params.set('sortBy', sortBy)
+  if (order) params.set('order', order)
+  if (page) params.set('page', page)
+  params.set('limit', '200')
 
-    const res = await fetch(`http://localhost:3001/api/<feature>?${params}`, {
-      signal: AbortSignal.timeout(5000),
-    })
-    if (!res.ok) return { error: `Request failed with status ${res.status}` }
-    return res.json()
-  } catch (err) {
-    return { error: err.message }
-  }
+  const res = await fetch(`http://localhost:3001/api/<feature>?${params}`, {
+    signal: AbortSignal.timeout(5000),
+  })
+  if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
+  return res.json()
 }
 
-export function use<Feature>({ search, sortBy, order } = {}) {
+export function use<Feature>({ search, sortBy, order, page } = {}) {
   return useQuery({
-    queryKey: ['<feature>', { search, sortBy, order }],
-    queryFn: () => fetch<Feature>({ search, sortBy, order }),
+    queryKey: ['<feature>', { search, sortBy, order, page }],
+    queryFn: () => fetch<Feature>({ search, sortBy, order, page }),
     staleTime: 1000 * 60 * 5,
   })
 }
@@ -66,9 +71,10 @@ export function use<Feature>({ search, sortBy, order } = {}) {
 
 ### URL state
 
-- Search, sort column, and sort direction are stored in URL search params via `useSearchParams`.
+- Search, sort column, sort direction, and current page are stored in URL search params via `useSearchParams`.
 - This makes the table state bookmarkable and shareable.
-- Params: `search`, `sortBy`, `order` (`"asc"` | `"desc"`, default `"asc"`).
+- Params: `search`, `sortBy`, `order` (`"asc"` | `"desc"`, default `"asc"`), `page` (integer, default `1`).
+- Changing search, sort, or a filter must reset `page` by deleting the param.
 
 ### Search input
 
@@ -96,10 +102,11 @@ const COLUMNS = [
 
 ### Data guard
 
-Always guard the query result before passing to `DataTable`:
+The API returns a paginated envelope. Always guard before passing rows to `DataTable`:
 
 ```js
-const items = Array.isArray(data) ? data : [];
+const items = Array.isArray(data?.data) ? data.data : [];
+const totalPages = data?.totalPages ?? 1;
 ```
 
 ### Render states
@@ -121,6 +128,34 @@ Wrap everything in `<ErrorBoundary>`. Inside, render in priority order:
   onSort={handleSort}
 />
 ```
+
+---
+
+### Pagination
+
+Every table must render a `<Pagination>` component below the `<DataTable>`. The component is shared at `src/shared/components/Pagination/Pagination.jsx`.
+
+```jsx
+import { Pagination } from '../../../shared/components/Pagination/Pagination'
+
+<Pagination
+  page={page}
+  totalPages={totalPages}
+  onPrev={() => handlePageChange(page - 1)}
+  onNext={() => handlePageChange(page + 1)}
+/>
+```
+
+Props:
+
+| Prop | Type | Description |
+|---|---|---|
+| `page` | `number` | Current page (1-based) |
+| `totalPages` | `number` | Total number of pages from the server response |
+| `onPrev` | `() => void` | Called when Prev is clicked |
+| `onNext` | `() => void` | Called when Next is clicked |
+
+The `Pagination` component disables Prev when `page <= 1` and Next when `page >= totalPages`. It always renders visibly — place it outside the virtualised list so it stays pinned to the bottom of the view. Adjust the feature's `__table` height token to leave room (e.g. subtract `~50px` more than before).
 
 ---
 
@@ -147,4 +182,4 @@ Do not modify `DataTable` for feature-specific needs. It accepts:
 | `order` | `"asc" \| "desc"` | Sort direction |
 | `onSort` | `(key: string) => void` | Called when a sortable header is clicked |
 
-`DataTable` uses `react-virtualized` (`AutoSizer` + `List`) for rendering. Row height is `45px`, table height is `600px`, overscan is `5`.
+`DataTable` uses `react-window` (`List`) for rendering. Row height is `45px`, overscan is `5`. The `List` measures its own container via an internal `ResizeObserver`, so no `AutoSizer` wrapper is needed. The container's height is set by the feature's `__table` SCSS class (e.g. `vehicles-table__table`), which uses `calc(100vh - Xpx)` to fill the viewport dynamically.
